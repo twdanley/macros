@@ -1,8 +1,7 @@
-
 int Fun4All_G4_sPHENIX(
-		       const int nEvents = 10,
-		       const char * inputFile = "/gpfs02/phenix/prod/sPHENIX/preCDR/pro.1-beta.5/single_particle/spacal1d/fieldmap/G4Hits_sPHENIX_e-_eta0_16GeV.root",
-		       const char * outputFile = "G4sPHENIXCells.root"
+		       const int nEvents = 100,
+		       const char * inputFile = "/gpfs/mnt/gpfs02/sphenix/sim/sim01/production/2016-02-01/spacal2d/fieldmap/G4Hits_sPHENIX_gamma_eta0_24GeV-0000.root",
+		       const char * outputFile = "PHENIXclust_gam_eta0_24GeV.root"
 		       )
 {
   //===============
@@ -13,7 +12,7 @@ int Fun4All_G4_sPHENIX(
   // read previously generated g4-hits files, in this case it opens a DST and skips
   // the simulations step completely. The G4Setup macro is only loaded to get information
   // about the number of layers used for the cell reco code
-  const bool readhits = false;
+  const bool readhits = true;
   // Or:
   // read files in HepMC format (typically output from event generators like hijing or pythia)
   const bool readhepmc = false; // read HepMC files
@@ -312,6 +311,52 @@ int Fun4All_G4_sPHENIX(
           );
     }
 
+//temp lines for QA modules
+  {
+// gSystem->Load("libPHFlowJetMaker.so");
+//  PHFlowJetMaker *flowJetMaker1 = new PHFlowJetMaker("PHFlowJetMaker","anti-kt",0.3);
+//   se->registerSubsystem(flowJetMaker1);
+
+
+    gSystem->Load("libqa_modules");
+
+    se->registerSubsystem( new QAG4SimulationCalorimeter("CEMC") );
+//     se->registerSubsystem( new QAG4SimulationCalorimeter("HCALIN") );
+//     se->registerSubsystem( new QAG4SimulationCalorimeter("HCALOUT") );
+
+//     QAG4SimulationCalorimeterSum * calo_qa = new QAG4SimulationCalorimeterSum();
+// //    calo_qa->Verbosity(10);
+//     se->registerSubsystem(calo_qa );
+
+//       if (do_jet_reco)
+//         {
+//           QAG4SimulationJet * calo_jet7 = new QAG4SimulationJet(
+//               "AntiKt_Truth_r07");
+//           calo_jet7->add_reco_jet("AntiKt_Tower_r07");
+//           calo_jet7->add_reco_jet("AntiKt_Cluster_r07");
+//           calo_jet7->add_reco_jet("AntiKt_Track_r07");
+// 	  // calo_jet7->Verbosity(20);
+//           se->registerSubsystem(calo_jet7);
+
+//           QAG4SimulationJet * calo_jet7 = new QAG4SimulationJet(
+//               "AntiKt_Truth_r04");
+//           calo_jet7->add_reco_jet("AntiKt_Tower_r04");
+//           calo_jet7->add_reco_jet("AntiKt_Cluster_r04");
+//           calo_jet7->add_reco_jet("AntiKt_Track_r04");
+//           se->registerSubsystem(calo_jet7);
+
+//           QAG4SimulationJet * calo_jet7 = new QAG4SimulationJet(
+//               "AntiKt_Truth_r02");
+//           calo_jet7->add_reco_jet("AntiKt_Tower_r02");
+//           calo_jet7->add_reco_jet("AntiKt_Cluster_r02");
+//           calo_jet7->add_reco_jet("AntiKt_Track_r02");
+//           se->registerSubsystem(calo_jet7);
+//         }
+    }
+
+
+
+
   // Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputFile);
   // if (do_dst_compress) DstCompress(out);
   // se->registerOutputManager(out);
@@ -333,6 +378,13 @@ int Fun4All_G4_sPHENIX(
 
   se->run(nEvents);
 
+ //temp lines for QA modules
+  {
+    gSystem->Load("libqa_modules");
+    QAHistManagerDef::saveQARootFile(string(outputFile) + "_qa.root");
+
+  }
+  
   //-----
   // Exit
   //-----

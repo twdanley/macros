@@ -469,13 +469,14 @@ void CEMC_Towers(int verbosity = 0) {
   return;
 }
 
-void CEMC_Clusters(int verbosity = 0) {
+void CEMC_Clusters(int verbosity = 3) {
 
   gSystem->Load("libfun4all.so");
   gSystem->Load("libg4detectors.so");
   Fun4AllServer *se = Fun4AllServer::instance();
 
-  RawClusterBuilder* ClusterBuilder = new RawClusterBuilder("EmcRawClusterBuilder");
+  RawClusterBuilderv1* ClusterBuilder = new RawClusterBuilderv1("EmcRawClusterBuilder");
+  //RawClusterBuilder* ClusterBuilder = new RawClusterBuilder("EmcRawClusterBuilder");
   ClusterBuilder->Detector("CEMC");
   ClusterBuilder->Verbosity(verbosity);
   se->registerSubsystem( ClusterBuilder );
