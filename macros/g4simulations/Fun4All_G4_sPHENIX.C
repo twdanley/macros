@@ -1,8 +1,6 @@
 
-int Fun4All_G4_sPHENIX(
-		       const int nEvents = 10,
-		       const char * inputFile = "/gpfs02/phenix/prod/sPHENIX/preCDR/pro.1-beta.5/single_particle/spacal1d/fieldmap/G4Hits_sPHENIX_e-_eta0_16GeV.root",
-		       const char * outputFile = "G4sPHENIXCells.root"
+int Fun4All_G4_sPHENIX(const int nEvents = 100,
+		       const char * inputFile = "/gpfs/mnt/gpfs02/sphenix/sim/sim01/production/2016-02-01/spacal2d/fieldmap/G4Hits_sPHENIX_gamma_eta0_24GeV-0000.root",   const char * outputFile = "PHENIXclust_gam_eta0_24GeV.root"
 		       )
 {
   //===============
@@ -13,7 +11,7 @@ int Fun4All_G4_sPHENIX(
   // read previously generated g4-hits files, in this case it opens a DST and skips
   // the simulations step completely. The G4Setup macro is only loaded to get information
   // about the number of layers used for the cell reco code
-  const bool readhits = false;
+  const bool readhits = true;
   // Or:
   // read files in HepMC format (typically output from event generators like hijing or pythia)
   const bool readhepmc = false; // read HepMC files
@@ -319,6 +317,11 @@ int Fun4All_G4_sPHENIX(
   //-----------------
   // Event processing
   //-----------------
+  
+     gSystem->Load("libqa_modules");
+
+     se->registerSubsystem( new QAG4SimulationCalorimeter("CEMC") );
+
   if (nEvents < 0)
     {
       return;
@@ -332,6 +335,8 @@ int Fun4All_G4_sPHENIX(
     }
 
   se->run(nEvents);
+   
+    QAHistManagerDef::saveQARootFile(string(outputFile) + "_qa.root");
 
   //-----
   // Exit
