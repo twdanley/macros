@@ -480,7 +480,7 @@ void CEMC_Clusters(int verbosity = 0) {
   ClusterBuilder->Detector("CEMC");
   ClusterBuilder->Verbosity(verbosity);
   se->registerSubsystem( ClusterBuilder );
-  
+  cout<<" Using RCBv1"<<endl;
   return;
 }
 

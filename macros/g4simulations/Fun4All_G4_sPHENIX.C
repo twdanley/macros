@@ -1,6 +1,7 @@
 
 int Fun4All_G4_sPHENIX(const int nEvents = 100,
-		       const char * inputFile = "/gpfs/mnt/gpfs02/sphenix/sim/sim01/production/2016-02-01/spacal2d/fieldmap/G4Hits_sPHENIX_gamma_eta0_24GeV-0000.root",   const char * outputFile = "PHENIXclust_gam_eta0_24GeV.root"
+		       const char * inputFile = "/gpfs/mnt/gpfs02/sphenix/sim/sim01/production/2016-02-01/spacal2d/fieldmap/G4Hits_sPHENIX_gamma_eta0_24GeV-0000.root",   
+		       const char * outputFile = "GEOMclust_gam_eta0_24GeV.root"
 		       )
 {
   //===============
