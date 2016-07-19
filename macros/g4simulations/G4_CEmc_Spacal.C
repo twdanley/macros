@@ -4,9 +4,13 @@ int Max_cemc_layer = 1;
 
   // set a default value for SPACAL configuration
 //  // 1D azimuthal projective SPACAL (fast)
-int Cemc_spacal_configuration = PHG4CylinderGeom_Spacalv1::k1DProjectiveSpacal;
+//int Cemc_spacal_configuration = PHG4CylinderGeom_Spacalv1::k1DProjectiveSpacal;
 //   2D azimuthal projective SPACAL (slow)
-// int Cemc_spacal_configuration = PHG4CylinderGeom_Spacalv1::k2DProjectiveSpacal;
+ int Cemc_spacal_configuration = PHG4CylinderGeom_Spacalv1::k2DProjectiveSpacal;
+
+//bool combin_CEMC_tower_2x2 = false;
+bool combin_CEMC_tower_2x2 = true; //combine CEMC tower 2x2 per readout channel
+
 
 #include <iostream>
 
@@ -78,9 +82,9 @@ CEmc_1DProjectiveSpacal(PHG4Reco* g4Reco, double radius, const int crossings, co
   // 1.5cm thick teflon as an approximation for EMCAl light collection + electronics (10% X0 total estimated)
   PHG4CylinderSubsystem *cyl = new PHG4CylinderSubsystem("CEMC_ELECTRONICS", 0);
   cyl->SuperDetector("CEMC_ELECTRONICS");
-  cyl->set_double_param("radius",radius);
-  cyl->set_string_param("material","G4_TEFLON");
-  cyl->set_double_param("thickness",1.5);
+  cyl->SetRadius(radius);
+  cyl->SetMaterial("G4_TEFLON"); // plastic
+  cyl->SetThickness(1.5);
   if (absorberactive)  cyl->SetActive();
   g4Reco->registerSubsystem( cyl );
 
@@ -115,9 +119,9 @@ CEmc_1DProjectiveSpacal(PHG4Reco* g4Reco, double radius, const int crossings, co
   // 0.5cm thick Stainless Steel as an approximation for EMCAl support system
   cyl = new PHG4CylinderSubsystem("CEMC_SPT", 0);
   cyl->SuperDetector("CEMC_SPT");
-  cyl->set_double_param("radius",radius);
-cyl->set_string_param("material","SS310"); // SS310 Stainless Steel
- cyl->set_double_param("thickness",0.5);
+  cyl->SetRadius(radius);
+  cyl->SetMaterial("SS310"); // SS310 Stainless Steel
+  cyl->SetThickness(0.5);
   if (absorberactive)
     cyl->SetActive();
   g4Reco->registerSubsystem(cyl);
@@ -159,10 +163,10 @@ CEmc_2DProjectiveSpacal(PHG4Reco* g4Reco, double radius, const int crossings,
 
   // 1.5cm thick teflon as an approximation for EMCAl light collection + electronics (10% X0 total estimated)
   PHG4CylinderSubsystem *cyl = new PHG4CylinderSubsystem("CEMC_ELECTRONICS", 0);
-  cyl->set_double_param("radius",radius);
-  cyl->set_string_param("material","G4_TEFLON");
-  cyl->set_double_param("thickness",1.5- no_overlapp);
   cyl->SuperDetector("CEMC_ELECTRONICS");
+  cyl->SetRadius(radius);
+  cyl->SetMaterial("G4_TEFLON"); // plastic
+  cyl->SetThickness(1.5- no_overlapp);
   cyl->OverlapCheck(overlapcheck);
   if (absorberactive)  cyl->SetActive();
   g4Reco->registerSubsystem( cyl );
@@ -174,9 +178,9 @@ CEmc_2DProjectiveSpacal(PHG4Reco* g4Reco, double radius, const int crossings,
   // 0.5cm thick Stainless Steel as an approximation for EMCAl support system
   cyl = new PHG4CylinderSubsystem("CEMC_SPT", 0);
   cyl->SuperDetector("CEMC_SPT");
-cyl->set_double_param("radius",radius +cemcthickness - 0.5 );
-cyl->set_string_param("material","SS310"); // SS310 Stainless Steel
-cyl->set_double_param("thickness",0.5 - no_overlapp);
+  cyl->SetRadius(radius +cemcthickness - 0.5 );
+  cyl->SetMaterial("SS310"); // SS310 Stainless Steel
+  cyl->SetThickness(0.5 - no_overlapp);
   cyl->OverlapCheck(overlapcheck);
   if (absorberactive)
     cyl->SetActive();
@@ -293,9 +297,9 @@ CEmc_Proj(PHG4Reco* g4Reco, double radius, const int crossings, const int absorb
   radius += no_overlapp;
 
   PHG4CylinderSubsystem *cyl = new PHG4CylinderSubsystem("EMCELECTRONICS", 0);
-  cyl->set_double_param("radius",radius);
-  cyl->set_string_param("material","G4_TEFLON");
-  cyl->set_double_param("thickness",0.5);
+  cyl->SetRadius(radius);
+  cyl->SetMaterial("G4_TEFLON"); // plastic
+  cyl->SetThickness(0.5);
   if (absorberactive)  cyl->SetActive();
   g4Reco->registerSubsystem( cyl );
   radius += 0.5;
@@ -385,7 +389,7 @@ void CEMC_Cells(int verbosity = 0) {
           const double radius = 95;
           cemc_cells->cellsize(i,  2*TMath::Pi()/256. * radius, 2*TMath::Pi()/256. * radius);
       }
-      cemc_cells->set_timing_window_defaults(0.0,60.0);
+      cemc_cells->set_timing_window_size(60);
       se->registerSubsystem(cemc_cells);
 
     }
@@ -445,7 +449,21 @@ void CEMC_Towers(int verbosity = 0) {
       return ;
     }
 
-  static const double photoelectron_per_GeV = 500;//500 photon per total GeV deposition
+ // Make ganged output for CEMC
+  if (combin_CEMC_tower_2x2)
+  {
+   
+ // group CEMC RawTower to CEMC2x2
+    RawTowerCombiner * TowerCombiner = new RawTowerCombiner("RawTowerCombiner_CEMC");
+    TowerCombiner->Detector("CEMC");
+    TowerCombiner->set_combine_eta(2);
+    TowerCombiner->set_combine_phi(2);
+//    TowerCombiner->Verbosity(RawTowerCombiner::VERBOSITY_SOME);
+    se->registerSubsystem( TowerCombiner );
+
+  }
+ 
+ static const double photoelectron_per_GeV = 500;//500 photon per total GeV deposition
 
   RawTowerDigitizer *TowerDigitizer = new RawTowerDigitizer("EmcRawTowerDigitizer");
   TowerDigitizer->Detector("CEMC");
@@ -475,14 +493,12 @@ void CEMC_Clusters(int verbosity = 0) {
   gSystem->Load("libg4detectors.so");
   Fun4AllServer *se = Fun4AllServer::instance();
 
-  //RawClusterBuilder* ClusterBuilder = new RawClusterBuilder("EmcRawClusterBuilder");
+  // RawClusterBuilder* ClusterBuilder = new RawClusterBuilder("EmcRawClusterBuilder");
   RawClusterBuilderv1* ClusterBuilder = new RawClusterBuilderv1("EmcRawClusterBuilder");
   ClusterBuilder->Detector("CEMC");
   ClusterBuilder->Verbosity(verbosity);
   se->registerSubsystem( ClusterBuilder );
-
-  cout<<"trying to match with tyler"<<endl;
- 
+  
   return;
 }
 
